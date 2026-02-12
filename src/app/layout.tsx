@@ -3,7 +3,6 @@ import { IBM_Plex_Mono, Inter } from "next/font/google";
 
 import { Providers } from "@/components/providers";
 
-//@ts-ignore
 import "./globals.css";
 
 const inter = Inter({
