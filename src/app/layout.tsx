@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Inter } from "next/font/google";
 
-import { ThemeProvider } from "@/components/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
+import { Providers } from "@/components/providers";
 
 //@ts-ignore
 import "./globals.css";
@@ -31,25 +28,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider appearance={{
-      theme: dark,
-      variables:{
-        colorPrimary: "var(--primary)",
-        
-      }
-    }}>
-      <html lang="en" suppressHydrationWarning>
-        <body className={`${inter.variable} ${plexMono.variable} antialiased`}>
-          <ThemeProvider
-            attribute={"class"}
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <TooltipProvider>{children}</TooltipProvider>
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} ${plexMono.variable} antialiased`}>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }
