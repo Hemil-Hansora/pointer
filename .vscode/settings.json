@@ -2,5 +2,8 @@
     "cSpell.words": [
         "Firecrawl",
         "inngest"
+    ],
+    "java.project.sourcePaths": [
+        "src/app/projects"
     ]
 }

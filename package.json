@@ -16,6 +16,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@mendable/firecrawl-js": "^4.12.1",
     "ai": "^6.0.82",
+    "allotment": "^1.20.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
