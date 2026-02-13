@@ -4,6 +4,13 @@ import { cn } from "@/lib/utils";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { useState } from "react";
 import { GithubIcon } from "lucide-react";
+import { Allotment } from "allotment";
+import { FileExplorer } from "./file-explorer";
+
+const MIN_SIDEBAR_WIDTH = 200;
+const MAX_SIDEBAR_WIDTH = 800;
+const DEFAULT_SIDEBAR_WIDTH = 350;
+const DEFAULT_MAIN_SIZE = 1000;
 
 const Tab = ({
   label,
@@ -44,8 +51,8 @@ export const ProjectIdView = ({ projectId }: { projectId: Id<"projects"> }) => {
         />
         <div className="flex-1 flex justify-end h-full">
           <div className="flex items-center gap-1.5 h-full px-3  cursor-pointer border-l text-muted-foreground  hover:bg-accent/30">
-          <GithubIcon className="size-3.5"/>
-<span className="text-sm">Export</span>
+            <GithubIcon className="size-3.5" />
+            <span className="text-sm">Export</span>
           </div>
         </div>
       </nav>
@@ -56,7 +63,23 @@ export const ProjectIdView = ({ projectId }: { projectId: Id<"projects"> }) => {
             activeTab === "editor" ? "visible" : "invisible",
           )}
         >
-          <div>Editor</div>
+          <Allotment
+            defaultSizes={[
+              DEFAULT_SIDEBAR_WIDTH,
+              DEFAULT_MAIN_SIZE,
+            ]}
+          >
+            <Allotment.Pane snap
+              minSize={MIN_SIDEBAR_WIDTH}
+              maxSize={MAX_SIDEBAR_WIDTH}
+              preferredSize={DEFAULT_SIDEBAR_WIDTH}
+            >
+          <FileExplorer projectId={projectId} />
+            </Allotment.Pane>
+             <Allotment.Pane>
+              <p>Editor view</p>
+            </Allotment.Pane>
+          </Allotment>
         </div>
         <div
           className={cn(
