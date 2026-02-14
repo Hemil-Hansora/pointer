@@ -10,13 +10,17 @@ export const useCreateFile = () => {
   return useMutation(api.files.createFile);
 };
 
-export const useRenameFile=()=>{
-    return useMutation(api.files.renameFile)
+export const useUpdateFile=()=>{
+  return useMutation(api.files.updateFile)
 }
 
-export const useDeleteFile=()=>{
-    return useMutation(api.files.deleteFile)
-}
+export const useRenameFile = () => {
+  return useMutation(api.files.renameFile);
+};
+
+export const useDeleteFile = () => {
+  return useMutation(api.files.deleteFile);
+};
 
 export const useFolderContents = ({
   projectId,
@@ -31,4 +35,12 @@ export const useFolderContents = ({
     api.files.getFolderContents,
     enabled ? { projectId, parentId } : "skip",
   );
+};
+
+export const useFile = (fileId: Id<"files"> | null) => {
+  return useQuery(api.files.getFile, fileId ? { id: fileId } : "skip");
+};
+
+export const useFilePath = (fileId: Id<"files"> | null) => {
+  return useQuery(api.files.getFilePath, fileId ? { id: fileId } : "skip");
 };
