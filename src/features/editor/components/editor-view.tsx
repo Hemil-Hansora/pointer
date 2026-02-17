@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { TopNavigation } from "./top-navigation";
 import { useEditor } from "../hooks/use-editor";
@@ -15,6 +15,14 @@ export const EditorView = ({ projectId }: { projectId: Id<"projects"> }) => {
 
   const isActiveFileBinary = activeFile && activeFile.storageId
   const isActiveFileText = activeFile && !activeFile.storageId
+
+  useEffect(() => {
+    return()=>{
+      if(timeOutRef.current){
+        clearTimeout(timeOutRef.current)
+      }
+    }
+  },[activeTabId])
 
   return (
     <div className="h-full flex flex-col">
@@ -51,6 +59,11 @@ export const EditorView = ({ projectId }: { projectId: Id<"projects"> }) => {
               }, 1500);
             }}
           />
+        )}
+        {isActiveFileBinary && (
+          <div className="size-full flex items-center justify-center">
+            <p className="text-muted-foreground">Binary file - cannot be previewed</p>
+          </div>
         )}
       </div>
     </div>

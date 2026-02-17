@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef } from "react";
-import {  basicSetup } from "codemirror";
-import { javascript } from "@codemirror/lang-javascript";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { customTheme } from "../extensions/theme";
 import { getLanguageExtension } from "../extensions/language-extensions";
@@ -10,6 +8,9 @@ import { minimap } from "../extensions/minimap";
 import {indentationMarkers } from "@replit/codemirror-indentation-markers";
 import { customSetup } from "../extensions/custom-setup";
 import {aura} from '@ddietr/codemirror-themes/aura'
+import { suggestion } from "../extensions/suggestion";
+import { quickEdit } from "../extensions/quick-edit";
+import { selectionTooltip } from "../extensions/selection-tooltip";
 
 
 
@@ -34,6 +35,9 @@ export const CodeEditor = ({ fileName, initialValue = "", onChange }: Props) => 
         customSetup,
         customTheme,
         languageExtension,
+        suggestion(fileName),
+        quickEdit(fileName),
+        selectionTooltip(),
         keymap.of([indentWithTab]),
         aura,
         minimap(),
