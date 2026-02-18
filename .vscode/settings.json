@@ -6,7 +6,8 @@
         "inngest",
         "keymap",
         "openrouter",
-        "replit"
+        "replit",
+        "Retriable"
     ],
     "java.project.sourcePaths": [
         "src/app/projects"
