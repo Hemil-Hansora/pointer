@@ -24,6 +24,7 @@
     "@codemirror/view": "^6.39.14",
     "@ddietr/codemirror-themes": "^1.5.2",
     "@hookform/resolvers": "^5.2.2",
+    "@inngest/agent-kit": "^0.13.2",
     "@mendable/firecrawl-js": "^4.12.1",
     "@openrouter/ai-sdk-provider": "^2.2.3",
     "@radix-ui/react-use-controllable-state": "^1.2.2",

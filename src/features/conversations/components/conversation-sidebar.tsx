@@ -31,6 +31,8 @@ import {
   MessageResponse,
 } from "@/components/ai-elements/message";
 import ky from "ky";
+import { PastConversationDialog } from "./past-conversation-dialog";
+import { DEFAULT_CONVERSATION_TITLE } from "../constant";
 
 export const ConversationSidebar = ({
   projectId,
@@ -40,6 +42,7 @@ export const ConversationSidebar = ({
   const [input, setInput] = useState("");
   const [selectedConversationId, setSelectedConversationId] =
     useState<Id<"conversations"> | null>(null);
+  const [pastConversationOpen, setPastConversationOpen] = useState(false);
 
   const createConversation = useCreateConversation();
 
@@ -55,11 +58,22 @@ export const ConversationSidebar = ({
     (msg) => msg.status === "processing",
   );
 
+  const handleCancel = async () => {
+    try {
+      await ky.post("/api/messages/cancel", {
+        json: { projectId },
+      });
+    } catch (error) {
+      console.error("Error at handleCancel :  ", error);
+      toast.error("Unable to cancel the message. Please try again.");
+    }
+  };
+
   const handleCreateConversation = async () => {
     try {
       const conversationId = await createConversation({
         projectId,
-        title: "New Conversation",
+        title: DEFAULT_CONVERSATION_TITLE
       });
       setSelectedConversationId(conversationId);
       return conversationId;
@@ -70,14 +84,14 @@ export const ConversationSidebar = ({
   };
 
   const handleSubmit = async (message: PromptInputMessage) => {
-    if(isProcessing && !message.text){
-      //TODO:
-      setInput("")
+    if (isProcessing && !message.text) {
+      await handleCancel();
+      setInput("");
       return;
     }
 
     let conversationId = activeConversationId;
-    
+
     if (!conversationId) {
       conversationId = await handleCreateConversation();
       if (!conversationId) {
@@ -85,91 +99,107 @@ export const ConversationSidebar = ({
       }
     }
     try {
-      await ky.post("/api/messages",{
-        json:{
+      await ky.post("/api/messages", {
+        json: {
           conversationId,
           message: message.text,
-        }
-      })
+        },
+      });
     } catch (error) {
       toast.error("Message failed to send. Please try again.");
-      return
-    }finally{
-      setInput("")
+      return;
+    } finally {
+      setInput("");
     }
-  }
+  };
 
   return (
-    <div className="flex flex-col h-full bg-sidebar ">
-      <div className="h-8.75 flex items-center justify-between  border-b">
-        <div className="text-sm truncate pl-3">
-          {activeConversation?.title ?? "New Conversation"}
+    <>
+      <PastConversationDialog
+        projectId={projectId}
+        open={pastConversationOpen}
+        onOpenChange={setPastConversationOpen}
+        onSelect={setSelectedConversationId}
+      />
+      <div className="flex flex-col h-full bg-sidebar ">
+        <div className="h-8.75 flex items-center justify-between  border-b">
+          <div className="text-sm truncate pl-3">
+            {activeConversation?.title ?? DEFAULT_CONVERSATION_TITLE}
+          </div>
+          <div className="flex items-center px-1 gap-1 ">
+            <Button
+              size="icon-xs"
+              variant="highlight"
+              onClick={() => setPastConversationOpen(true)}
+            >
+              <HistoryIcon className="size-3.5" />
+            </Button>
+            <Button
+              size="icon-xs"
+              variant="highlight"
+              onClick={handleCreateConversation}
+            >
+              <PlusIcon className="size-3.5" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center px-1 gap-1 ">
-          <Button size="icon-xs" variant="highlight">
-            <HistoryIcon className="size-3.5" />
-          </Button>
-          <Button
-            size="icon-xs"
-            variant="highlight"
-            onClick={handleCreateConversation}
-          >
-            <PlusIcon className="size-3.5" />
-          </Button>
+        <Conversation>
+          <ConversationContent>
+            {conversationMessages?.map((msg, msgIdx) => (
+              <Message key={msg._id} from={msg.role}>
+                <MessageContent>
+                  {msg.status === "processing" ? (
+                    <div className="flex items-center gap-e text-muted-foreground">
+                      <LoaderIcon className="siz-4 animate-spin" />
+                      <span>Thinking...</span>
+                    </div>
+                  ) : msg.status === "cancelled" ? (
+                    <span className="p-1 text-muted-foreground italic">
+                      Request Cancelled
+                    </span>
+                  ) : (
+                    <MessageResponse>{msg.content}</MessageResponse>
+                  )}
+                </MessageContent>
+                {msg.role === "assistant" &&
+                  msg.status === "completed" &&
+                  msgIdx === (conversationMessages.length ?? 0) - 1 && (
+                    <MessageActions>
+                      <MessageAction
+                        onClick={() => {
+                          navigator.clipboard.writeText(msg.content);
+                        }}
+                        label="Copy"
+                      >
+                        <CopyIcon className="size-3" />
+                      </MessageAction>
+                    </MessageActions>
+                  )}
+              </Message>
+            ))}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
+        <div className="p-3">
+          <PromptInput onSubmit={handleSubmit} className="mt-2">
+            <PromptInputBody>
+              <PromptInputTextarea
+                placeholder="Ask Pointer anything..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isProcessing}
+              />
+            </PromptInputBody>
+            <PromptInputFooter>
+              <PromptInputTools />
+              <PromptInputSubmit
+                status={isProcessing ? "streaming" : undefined}
+                disabled={isProcessing ? false : !input}
+              />
+            </PromptInputFooter>
+          </PromptInput>
         </div>
       </div>
-      <Conversation>
-        <ConversationContent>
-          {conversationMessages?.map((msg, msgIdx) => (
-            <Message key={msg._id} from={msg.role}>
-              <MessageContent>
-                {msg.status === "processing" ? (
-                  <div className="flex items-center gap-e text-muted-foreground">
-                    <LoaderIcon className="siz-4 animate-spin" />
-                    <span>Thinking...</span>
-                  </div>
-                ) : (
-                  <MessageResponse>{msg.content}</MessageResponse>
-                )}
-              </MessageContent>
-              {msg.role === "assistant" &&
-                msg.status === "completed" &&
-                (msgIdx === (conversationMessages.length ?? 0) - 1) && (
-              <MessageActions>
-                <MessageAction
-                  onClick={() => {
-                    navigator.clipboard.writeText(msg.content);
-                  }}
-                  label="Copy"
-                >
-                  <CopyIcon className="size-3" />
-                </MessageAction>
-              </MessageActions>
-              )}
-            </Message>
-          ))}
-        </ConversationContent>
-        <ConversationScrollButton />
-      </Conversation>
-      <div className="p-3">
-        <PromptInput onSubmit={handleSubmit} className="mt-2">
-          <PromptInputBody>
-            <PromptInputTextarea
-              placeholder="Ask Pointer anything..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={isProcessing}
-            />
-          </PromptInputBody>
-          <PromptInputFooter>
-            <PromptInputTools />
-            <PromptInputSubmit
-              status={isProcessing ? "streaming" : undefined}
-              disabled={isProcessing ? false : !input}
-            />
-          </PromptInputFooter>
-        </PromptInput>
-      </div>
-    </div>
+    </>
   );
 };

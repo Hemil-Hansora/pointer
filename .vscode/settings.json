@@ -7,7 +7,8 @@
         "keymap",
         "openrouter",
         "replit",
-        "Retriable"
+        "Retriable",
+        "shiki"
     ],
     "java.project.sourcePaths": [
         "src/app/projects"
