@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "credentialless",
         "ddietr",
         "Firecrawl",
         "groq",
@@ -8,7 +9,8 @@
         "openrouter",
         "replit",
         "Retriable",
-        "shiki"
+        "shiki",
+        "webcontainer"
     ],
     "java.project.sourcePaths": [
         "src/app/projects"
