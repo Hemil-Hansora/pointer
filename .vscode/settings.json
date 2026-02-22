@@ -5,6 +5,7 @@
         "Firecrawl",
         "groq",
         "inngest",
+        "isbinaryfile",
         "keymap",
         "openrouter",
         "replit",
@@ -12,7 +13,4 @@
         "shiki",
         "webcontainer"
     ],
-    "java.project.sourcePaths": [
-        "src/app/projects"
-    ]
 }
