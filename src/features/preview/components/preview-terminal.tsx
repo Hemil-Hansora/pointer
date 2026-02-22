@@ -16,6 +16,7 @@ export const PreviewTerminal = ({ output }: PreviewTerminalProps) => {
   const fitAddonRef = useRef<FitAddon | null>(null);
   const lastLengthRef = useRef(0);
 
+  // Initialize terminal
   useEffect(() => {
     if (!containerRef.current || terminalRef.current) return;
 
@@ -24,17 +25,17 @@ export const PreviewTerminal = ({ output }: PreviewTerminalProps) => {
       disableStdin: true,
       fontSize: 12,
       fontFamily: "monospace",
-      theme: {
-        background: "#1f2228",
-      },
+      theme: { background: "#1f2228" },
     });
 
     const fitAddon = new FitAddon();
     terminal.loadAddon(fitAddon);
+    terminal.open(containerRef.current);
 
     terminalRef.current = terminal;
     fitAddonRef.current = fitAddon;
 
+    // Write existing output on mount
     if (output) {
       terminal.write(output);
       lastLengthRef.current = output.length;
@@ -51,8 +52,11 @@ export const PreviewTerminal = ({ output }: PreviewTerminalProps) => {
       terminalRef.current = null;
       fitAddonRef.current = null;
     };
+    // "output" does not need to be a dependency since it is not intended
+    // to update anything, just used on mount
   }, []);
 
+  // Write output
   useEffect(() => {
     if (!terminalRef.current) return;
 
@@ -71,7 +75,7 @@ export const PreviewTerminal = ({ output }: PreviewTerminalProps) => {
   return (
     <div
       ref={containerRef}
-      className="flex-1 min-h-0 p-3 [&_.xterm]:h-full! [&_.xterm-viewport]:h-full! [&_.xterm-screen]:h-full! bg-sidebar "
+      className="flex-1 min-h-0 p-3 [&_.xterm]:h-full! [&_.xterm-viewport]:h-full! [&_.xterm-screen]:h-full! bg-sidebar"
     />
   );
 };

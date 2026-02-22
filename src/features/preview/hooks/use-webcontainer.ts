@@ -4,26 +4,56 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useFiles } from "@/features/projects/hooks/use-files";
 import { buildFileTree, getFilePath } from "../utils/file-tree";
 
-let webcontainerInstance: WebContainer | null = null;
-let bootPromise: Promise<WebContainer> | null = null;
+// Store on globalThis so the reference survives Next.js HMR reloads.
+// Without this, HMR resets module-level variables while the browser
+// still holds the old WebContainer instance, causing
+// "unable to create more instances" on the next boot() call.
+const WC_KEY = "__webcontainer_instance__" as const;
+const WC_BOOT_KEY = "__webcontainer_boot_promise__" as const;
 
-const getWebContainer = async (): Promise<WebContainer> => {
-  if (webcontainerInstance) {
-    return webcontainerInstance;
-  }
-  if (!bootPromise) {
-    bootPromise = WebContainer.boot({ coep: "credentialless" });
-  }
-  webcontainerInstance = await bootPromise;
-  return webcontainerInstance;
+const getStoredInstance = (): WebContainer | null =>
+  (globalThis as Record<string, unknown>)[WC_KEY] as WebContainer | null;
+
+const setStoredInstance = (instance: WebContainer | null) => {
+  (globalThis as Record<string, unknown>)[WC_KEY] = instance;
 };
 
-const teardownWebContainer = async () => {
-  if (webcontainerInstance) {
-    webcontainerInstance.teardown();
-    webcontainerInstance = null;
+const getStoredBootPromise = (): Promise<WebContainer> | null =>
+  (globalThis as Record<string, unknown>)[WC_BOOT_KEY] as Promise<WebContainer> | null;
+
+const setStoredBootPromise = (promise: Promise<WebContainer> | null) => {
+  (globalThis as Record<string, unknown>)[WC_BOOT_KEY] = promise;
+};
+
+const getWebContainer = async (): Promise<WebContainer> => {
+  const existing = getStoredInstance();
+  if (existing) {
+    return existing;
   }
-  bootPromise = null;
+
+  if (!getStoredBootPromise()) {
+    const promise = WebContainer.boot({ coep: "credentialless" });
+    setStoredBootPromise(promise);
+  }
+
+  try {
+    const instance = await getStoredBootPromise()!;
+    setStoredInstance(instance);
+    return instance;
+  } catch (err) {
+    // If boot fails, clear the promise so the next attempt can retry
+    setStoredBootPromise(null);
+    throw err;
+  }
+};
+
+const teardownWebContainer = () => {
+  const instance = getStoredInstance();
+  if (instance) {
+    instance.teardown();
+    setStoredInstance(null);
+  }
+  setStoredBootPromise(null);
 };
 
 interface WebContainerProps {

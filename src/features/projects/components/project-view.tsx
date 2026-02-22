@@ -16,6 +16,7 @@ import {
   uniqueNamesGenerator,
 } from "unique-names-generator";
 import { ProjectsCommandDialog } from "./projects-command-dialog";
+import { ImportGithubDialog } from "./import-github-dialog";
 
 const font = Poppins({
   subsets: ["latin"],
@@ -26,6 +27,8 @@ export const ProjectView = () => {
   const createProject = useCreateProject();
 
   const [commandDialogOpen, setCommandDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -33,6 +36,10 @@ export const ProjectView = () => {
         if (e.key === "k") {
           e.preventDefault();
           setCommandDialogOpen((open) => !open);
+        }
+        if (e.key === "i") {
+          e.preventDefault();
+          setImportDialogOpen(true);
         }
       }
     };
@@ -47,6 +54,10 @@ export const ProjectView = () => {
       <ProjectsCommandDialog
         open={commandDialogOpen}
         onOpenChange={setCommandDialogOpen}
+      />
+      <ImportGithubDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
       />
       <div className="min-h-screen bg-sidebar flex flex-col justify-center items-center p-6 md:p-16">
         <div className="w-full max-w-sm mx-auto flex flex-col gap-4 items-center">
@@ -91,7 +102,8 @@ export const ProjectView = () => {
               </Button>
               <Button
                 variant={"outline"}
-                onClick={() => {}}
+                onClick={() =>{ 
+                  setImportDialogOpen(true)}}
                 className="h-full items-start justify-start p-4 bg-background flex flex-col gap-6 rounded-none"
               >
                 <div className="flex items-center justify-between w-full">
